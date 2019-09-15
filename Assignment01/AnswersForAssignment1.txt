@@ -1,0 +1,502 @@
+Question: Design a Traffic Controller System for a Junction
+
+Car can
+1.Go
+2.Wait
+
+Controller system can
+1.Switch traffic lights
+
+--------------------------------------------------
+Class: Light
+Data: color, // red, green or yellow
+      state  // on or off
+
+--------------------------------------------------
+Class: TrafficLight
+Data: location,      // eastern, western, south, north
+      lights<Light>, // init with a green light, a yellow light and a red light
+      state          // red, green or yellow 
+Behaviours: 
+switchLight(String color){
+    foreach(Light light in this.lights){
+        if (light.color == color){
+            light.state = on;
+        }
+        else{
+            light.state = off;
+        }
+    }
+    this.state = color;
+}
+
+--------------------------------------------------
+Class: ControllerSystem
+Data: easternTrafficLight, 
+      westernTrafficLight,
+      southTrafficLight,
+      northTrafficLight,  
+      greenLightPeriod,
+      yelowLightPeriod,
+Behaviours: 
+schedule(){
+    while(true){
+        westernTrafficLight.switchLight("red");
+        easternTrafficLight.switchLight("red");
+        southTrafficLight.switchLight("green");
+        northTrafficLight.switchLight("green");
+
+        wait this.greenLightPeriod;
+
+        southTrafficLight.switchLight("yellow");
+        northTrafficLight.switchLight("yellow");
+
+        wait this.yelowLightPeriod;
+
+        westernTrafficLight.switchLight("green");
+        easternTrafficLight.switchLight("green");
+        southTrafficLight.switchLight("red");
+        northTrafficLight.switchLight("red");
+
+        wait this.greenLightPeriod;
+
+        westernTrafficLight.switchLight("yellow");
+        easternTrafficLight.switchLight("yellow");
+
+        wait this.yelowLightPeriod;
+    }
+}
+
+canGo(toward){
+    switch(toward){
+        case "eastern":
+            if (easternTrafficLight.state != "red")
+                return true;
+            break;
+        case "western":
+            if (westernTrafficLight.state != "red")
+                return true;
+            break;
+        case "south":
+            if (southTrafficLight.state != "red")
+                return true;
+            break;
+        case "north":
+            if (northTrafficLight.state != "red")
+                return true;
+            break;
+    }
+    return false;
+}
+
+--------------------------------------------------
+Class: Car
+Data: toward // south, north, eastern, western
+Behaviours: 
+go(){
+    if (ControllerSystem.canGo(this.toward))
+    { 
+        // car can pass throgh
+    }
+    else{
+        this.wait();
+    }
+} 
+wait(){
+     // wait behind the line   
+}
+
+************************************************************
+Question: Design a Car Rental System
+
+Renter can
+1.login
+2.search cars
+3.rent a car
+4.return a car
+
+--------------------------------------------------
+Class: DriverLicense
+Data: name,
+      licenseNumber,
+      expireDate
+Behaviours:
+isValidBefore(date){
+    if (date.before(this.expireDate))
+        return true;
+    return false;
+}
+
+--------------------------------------------------
+Class: CreditCard
+Data: cardNumber,
+      name,
+      expireDate,
+      securityCode,
+      billingAddress
+Behaviours:
+makePayment(amount){
+    // make payment using the card information
+    // throw exception if failed
+}
+
+--------------------------------------------------
+Class: Renter
+Data: renterId, 
+      name, 
+      age, 
+      password, 
+      phoneNumber, 
+      creditCard, 
+      driverLicense
+Behaviours:
+login(){
+    RentalSystem.login(name, password);
+}
+
+searchCars(carType, lowestCost, highestCost, location){
+    List<Car> cars = RentalSystem.search(carType, lowestCost, highestCost, location);
+    // list the search results to user
+}
+
+pickUp(car, location){
+    RentalSystem.rent(this, car, pickUpDate, dropOffDate, location);
+}
+
+dropOff(car, location){
+    RentalSystem.dropOff(this, car, location);
+}
+
+--------------------------------------------------
+Class: Car
+Data: carID,
+      carType,
+      location,
+      availability, // true or false
+      costPerDay,
+      dueDate,
+      renter
+
+--------------------------------------------------
+Class: RentalSystem
+Data: carsInSystem<Car>,
+      userList,
+      underAgeFee
+Behaviours:
+login(name, password){
+    foreach(User user in this.userList){
+        if (user.name == name && user.password == password){
+            // user login success and return
+        }
+    }
+    // user login failed
+}
+
+search(carType, lowestCost, highestCost, location){
+    // assume lowestCost <= highestCost
+    List<Car> results;
+    foreach(Car car in this.carsInSystem){
+        if(car.costPerDay <= highestCost && 
+        car.costPerDay >= lowestCost && 
+        car.carType == carType && 
+        car.location == location &&
+        car.availability == true){
+            results.add(car);
+        }
+    }
+    retrun results;
+}
+
+pickUp(renter, car, pickUpDate, dropOffDate, location);{
+    if (renter.driverLicense.isvalidBefore(dropOffDate); == false ||
+    car.availability == false || 
+    renter.creditCard.name != renter.driverLicense.name ||
+    car.location != location ||
+    car.availability == false){
+        // rent failed and retrun
+    }
+    cost = car.costPerDay * daysBetween(pickUpDate, dropOffDate);
+    if (renter.age < 25){
+        cost += this.underAgeFee;
+    }
+    renter.creditCard.makePayment(cost);
+    car.renter = renter;
+    car.availability = false;
+    car.dueDate = pickUpDate;
+    // rental success
+}
+
+dropOff(renter, car, location){
+    Date today = new Date();
+    if car.dueDate.before(today){
+        lateFee = car.costPerDay * daysBetween(dropOffDate, pickUpDate);
+        renter.creditCard.makePayment(lateFee);
+    }
+    car.availability = true;
+    car.dueDate = null;
+    car.renter = null;
+}
+
+************************************************************
+Question: Design a Course Registration Platform
+
+Student can
+1.search courses
+2.register a course
+3.drop a course
+4.login
+
+--------------------------------------------------
+Class: Course
+Data: name,
+      courseNumber,
+      seatsRemain,
+      seatsMax,
+      teacher,
+      beginTime,
+      endTime,
+      weekday,
+      department,
+      credit
+      
+--------------------------------------------------
+Class: Student
+Data: name,
+      password,
+      studentNumber,
+      department,
+      registeredCourses<Course>,
+      credit,
+      maxCredit
+Behaviours:
+login(){
+    RegistrationPlatform.login(name, password);
+}
+
+searchCourses(searchParms){
+    List<Course> results = RegistrationPlatform.search(searchParms);
+    // list all the results to the student   
+}
+
+register(course){
+    RegistrationPlatform.register(this, course);
+}
+
+drop(course){
+    RegistrationPlatform.drop(this, course);
+}
+
+--------------------------------------------------
+Class: RegistrationPlatform
+Data: coursesInPlatform,
+      registerStartDate,
+      registerEndDate,
+      userList
+Behaviours:
+login(name, password){
+    foreach(User user in this.userList){
+        if (user.name == name && user.password == password){
+            // user login success and return
+        }
+    }
+    // user login failed
+}
+
+search(searchParms){
+    List<Course> searchResults;
+    foreach(Course course in this.coursesInPlatform){
+        if /* course meets the searchParms*/{
+            searchResults.add(course);
+        }
+    }
+    return searchResults;
+}
+
+checkDate(){
+    Date today = new Date();
+    if (today.before(this.registerStartDate) || today.after(this.registerEndDate)){
+        return false;
+    }
+    return true;
+}
+
+checkConflicts(course, student){
+    for(Course registeredCourse in student.registeredCourses){
+        if (registeredCourse.weekday == course.weekday && 
+        ((registeredCourse.beginTime.isAfter(course.beginTime) && registeredCourse.beginTime.isBefore(course.endTime)) ||
+        (registeredCourse.endTime.isAfter(course.beginTime) && registeredCourse.endTime.isBefore(course.endTime)))){
+            retrun true;
+        }
+    }
+    return false;
+}
+
+register(student, course){
+    if (this.checkDate() == flase || 
+    course.department != student.department ||
+    this.checkConflicts(course, student) == true||
+    course.seatsRemain <= 0 ||
+    (student.credit + course.credit) > student.maxCredit){
+        // refuse to register and return
+    }
+    student.registeredCourses.add(course);
+    student.credit += course.credit;
+    course.seatsRemain--;
+}
+
+drop(student, course){
+    student.registeredCourses.remove(course);
+    student.credit -= course.credit;
+    course.seatsRemain++;
+}
+
+************************************************************
+Question: Design a vending Machine (will accept coins of different denominations and vends out candies, soda etc)
+
+Customer can
+1.insert some coins
+2.select some items to purchase
+3.retrun change
+
+--------------------------------------------------
+Class: Coin
+Data: value, // 1, 5, 10, 25, 50, 100 cent
+      size,
+      weight,
+      length
+
+--------------------------------------------------
+Class: Item
+Data: price,  // in cents
+      name
+
+--------------------------------------------------
+Class: Customer
+Data: coins
+Behaviours:
+insertCoin(coin){
+    this.coins.remove(coin);
+    VendingMachine.insert(coin);
+}
+
+buyItem(item){
+    Item outMerchendise = VendingMachine.buy(Item);
+}
+
+getReturnedChange(){
+    List<Coin> returnedCoins = VendingMachine.returnChange();
+    this.coins.addAll(returnedCoins)
+}
+
+--------------------------------------------------
+Class: VendingMachine
+Data: Map<int, List<Coin>> coinsInMachine // init with values of the coins (1, 5, 10, 25, 50, 100) as keys
+      balance, // in cents
+      itemInMachine
+Behaviours:
+insert(coin){
+    balance += coin.value;
+    coinsInMachine.get(coin.value).add(coin);
+}
+
+buy(item){
+    if (this.itemInMachine.contains(item) == false ||
+    balance < item.price){
+        // purchase failed and return
+    }
+
+    this.itemInMachine.remove(item);
+    balance -= item.price;
+}
+
+returnChange(){
+    List<Coin> = returnedCoins;
+    List<int> values = {100, 50, 25, 10, 5, 1};
+    foreach(int value in values){
+        int num = balance / value;
+        for(int i = 0; i < num; i++){
+            returnedCoins.add(this.coinsInMachine.get(value).remove(0))
+        } 
+        balance %= value;
+        if(balance <= 0){
+            break;
+        }
+    }
+    return returnedCoins;
+}
+
+************************************************************
+Question: Design a Parking lot
+
+Driver can
+1.park the vehicle
+2.pay for parking and leave
+
+--------------------------------------------------
+Class: CreditCard
+Data: cardNumber,
+      name,
+      expireDate,
+      securityCode,
+      billingAddress
+Behaviours:
+makePayment(amount){
+    // make payment using the card information
+    // throw exception if failed
+}
+
+--------------------------------------------------
+Class: Vehicle
+Data: type,
+      name,
+      size
+
+--------------------------------------------------
+Class: Spot
+Data: size,
+      rate,
+      availability,
+      parkStartTime,
+      parkedVehicle
+
+--------------------------------------------------
+Class: Driver
+Data: vehicle,
+      name,
+      creditCard
+Behaviours:
+parkVehicle(){
+    ParkingLot.park(this.vehicle);
+}
+
+leaveAndPay(){
+    amount = ParkingLot.leave(this.vehicle, this.creditCard);
+}
+
+--------------------------------------------------
+Class: ParkingLot
+Data: spotsInLot,
+Behaviours:
+park(vehicle){
+    foreach(Spot spot in this.spotsInLot){
+        if (spot.size == vehicle.size && spot.availability == true){
+            spot.availability = false;
+            spot.parkedVehicle = vehicle;
+            spot.parkStartTime = new Date();
+            retrun 0;
+        }
+    }
+    // parking lot is full, refuse to park
+}
+
+leave(vehicle, creditCard){
+    foreach(Spot spot in this.spotsInLot){
+        if (spot.vehicle.equals(vehicle)){
+            amount = hoursBetween(spot.parkStartTime, new Date()) * spot.rate;
+            spot.availability = true;
+            spot.parkedVehicle = null;
+            spot.parkStartTime = null;
+            retrun 0;
+        }
+    }
+}
