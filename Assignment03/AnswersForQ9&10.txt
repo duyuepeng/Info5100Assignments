@@ -1,0 +1,32 @@
+Q9. Explain Encapsulation with an example. (Write at least 30-40 words).
+
+Encapsulation is a kind of mechanism to hide the detail of specifical implementation and only expose what we 
+want to expose. So we can prevent unauthorized access to our data. Good encapsulation can improve security and 
+reduce coupling. Here is an example.
+
+public class Person{
+    private int age;
+    public int getAge(){
+        return this.age;
+    }
+    public void setAge(int age){
+        if (age < 0 || age >= 150){
+            throw new Exception("Age should be a positive integer and less than 150.");
+        }
+        this.age = age;
+    }
+}
+
+For class Person, the attribute is private so we hide it from outside. To access that value, we need to use 
+getAge() and setAge(). As the example shows, setAge() has some conditional statements to protect our attribute 
+form illegal values. Besides, those conditions are kept inside the class and not in somewhere else, so our code 
+could be easy to maintain.
+
+--------------------------------------------------------------------------------------------------------------
+
+Q10. What is the difference between Encapsulation and Abstraction
+
+Abstraction cares less about details and just focuses on a higher level.  Abstraction lists what to do during 
+the design rather than figures out how to do during the implementation. However, encapsulation needs to know 
+the implementation details and packs them properly so others outside of the class don't need to care about 
+those details.
