@@ -22,11 +22,20 @@ public class Shape {
         System.out.println("Drawing " + this.name);
     }
 
+    private String formatDouble(double num) {
+        String string = new DecimalFormat("#.00").format(num);
+        if (string.charAt(string.length() - 1) == string.charAt(string.length() - 2)
+                && string.charAt(string.length() - 1) == '0') {
+            string = string.substring(0, string.length() - 1);
+        }
+        return string;
+    }
+
     public void getArea() {
-        System.out.println(new DecimalFormat("#.00").format(this.area));
+        System.out.println(this.formatDouble(this.area));
     }
 
     public void getPerimeter() {
-        System.out.println(new DecimalFormat("#.00").format(this.perimeter));
+        System.out.println(this.formatDouble(this.perimeter));
     }
 }

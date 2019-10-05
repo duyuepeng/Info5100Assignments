@@ -8,7 +8,7 @@ public class PsychiatristObject {
 
     public void observe(MoodyObject m) {
         m.expressFeelings();
-        System.out.println("Obeservation: " + m);
+        System.out.println("Observation: " + m);
     }
 
 }
